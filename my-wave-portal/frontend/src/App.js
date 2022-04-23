@@ -123,9 +123,9 @@ const App = () => {
 
         <div className="bio">
           I am Charley and I am learning solidity and React. Connect your Ethereum wallet and wave at me!
-        </div>
 
-        <button className="waveButton" onClick={wave}>
+        </div>
+        <button className="cta-button connect-wallet-button" onClick={wave}>
           Wave at Me
         </button>
 
@@ -133,7 +133,7 @@ const App = () => {
         * If there is no currentAccount render this button
         */}
         {!currentAccount && (
-          <button className="waveButton" onClick={connectWallet}>
+          <button className="cta-button connect-wallet-button" onClick={connectWallet}>
             Connect Wallet
           </button>
         )}

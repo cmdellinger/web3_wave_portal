@@ -1,3 +1,10 @@
+.App {
+  height: 100vh;
+  background-color: #1a202c;
+  overflow: scroll;
+  text-align: center;
+}
+
 .mainContainer {
   display: flex;
   justify-content: center;
@@ -31,4 +38,30 @@
   border: 0;
   border-radius: 5px;
   
+}
+
+.cta-button {
+  height: 45px;
+  border: 0;
+  width: auto;
+  padding-left: 40px;
+  padding-right: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+}
+
+.connect-wallet-button {
+  background: -webkit-linear-gradient(left, #60c657, #35aee2);
+  background-size: 200% 200%;
+  animation: gradient-animation 4s ease infinite;
+}
+
+.submit-wave-button {
+  background: -webkit-linear-gradient(left, #4e44ce, #35aee2);
+  background-size: 200% 200%;
+  animation: gradient-animation 4s ease infinite;
+  margin-left: 10px;
 }
