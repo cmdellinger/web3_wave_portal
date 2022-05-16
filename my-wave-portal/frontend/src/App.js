@@ -5,7 +5,6 @@ import abi from "./utils/WavePortal.json";
 
 require('dotenv').config();
 
-
 const App = () => {
   /*
   * Just a state variable we use to store our user's public wallet.
@@ -45,7 +44,7 @@ const App = () => {
         console.log("Found an authorized account:", account);
         setCurrentAccount(account);
       } else {
-        console.log("No authorized account found")
+        console.log("No authorized account found");
       }
     } catch (error) {
       console.log(error);
@@ -73,38 +72,50 @@ const App = () => {
     }
   }
 
+  /**
+  * This funciton updates the id="wavecount" element and optionally increments the wave count
+  */
+  const updateWaveCount = async (increment = false) => {
+      try {
+        const { ethereum } = window;
+  
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+  
+          let count = await wavePortalContract.getTotalWaves();
+          console.log("Retrieved total wave count...", count.toNumber());
+          
+          if (increment){
+            /*
+            * Execute the actual wave from your smart contract
+            */
+            const waveTxn = await wavePortalContract.wave();
+            console.log("Mining...", waveTxn.hash);
+    
+            await waveTxn.wait();
+            console.log("Mined -- ", waveTxn.hash);
+    
+            count = await wavePortalContract.getTotalWaves();
+            console.log("Retrieved total wave count...", count.toNumber());
+          }
+
+          document.getElementById("wavecount").innerHTML = `Total Waves: ${count.toNumber()}`;
+  
+        } else {
+          console.log("Ethereum object doesn't exist!");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+  }
+
   /*
   * This runs our smart contract's wave function
   */
   const wave = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-
-        let count = await wavePortalContract.getTotalWaves();
-        console.log("Retrieved total wave count...", count.toNumber());
-
-        /*
-        * Execute the actual wave from your smart contract
-        */
-        const waveTxn = await wavePortalContract.wave();
-        console.log("Mining...", waveTxn.hash);
-
-        await waveTxn.wait();
-        console.log("Mined -- ", waveTxn.hash);
-
-        count = await wavePortalContract.getTotalWaves();
-        console.log("Retrieved total wave count...", count.toNumber());
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    updateWaveCount(true);
   }
 
   /*
@@ -112,7 +123,10 @@ const App = () => {
   */
   useEffect(() => {
     checkIfWalletIsConnected();
-  }, [])
+    if(currentAccount) {
+      updateWaveCount();
+    }
+  } )
 
   return (
     <div className="mainContainer">
@@ -125,9 +139,6 @@ const App = () => {
           I am Charley and I am learning solidity and React. Connect your Ethereum wallet and wave at me!
 
         </div>
-        <button className="cta-button connect-wallet-button" onClick={wave}>
-          Wave at Me
-        </button>
 
         {/*
         * If there is no currentAccount render this button
@@ -137,8 +148,23 @@ const App = () => {
             Connect Wallet
           </button>
         )}
+
+        {/*
+        * If there is a currentAccount render wave button and waves
+        */}
+        {currentAccount && (
+          <button className="cta-button connect-wallet-button" onClick={wave}>
+            Wave at Me
+          </button>
+        )}
+        <br/>
+        {currentAccount && (
+          <div id="wavecount"></div>
+        )}
+
       </div>
     </div>
+    
   );
 }
 
