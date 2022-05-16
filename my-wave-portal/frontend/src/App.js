@@ -158,9 +158,7 @@ const App = () => {
           </button>
         )}
         <br/>
-        {currentAccount && (
-          <div id="wavecount"></div>
-        )}
+        <div id="wavecount"></div>
 
       </div>
     </div>
