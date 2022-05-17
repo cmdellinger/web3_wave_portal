@@ -18,6 +18,10 @@ const App = () => {
   * Create a variable here that references the abi content!
   */
   const contractABI = abi.abi;
+  /**
+   * Create a variable for wavetable elements
+   */
+  let wavesElement = document.getElementById('wavetable');
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -119,12 +123,54 @@ const App = () => {
   }
 
   /*
+  * This fetches the addresses that have waved
+  */
+  const fetchScores = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+
+        let waverAddresses = await wavePortalContract.getWaverAddresses();
+        console.log("Retrieved wave addresses...\n", waverAddresses);
+
+        console.log("Generating wave table...");
+        const headerElement = document.createElement('tr');
+        headerElement.className = 'table-header';
+        headerElement.innerHTML = `<td>Waver Address</td>
+                                 <td>Waves</td>`;
+        wavesElement.appendChild(headerElement);
+
+        waverAddresses.forEach(async function (waverAddress){
+          let waverCount = await wavePortalContract.getWaverCount(waverAddress);
+
+          const waveElement = document.createElement('tr');
+          waveElement.className = 'table-wave';
+          waveElement.innerHTML = `<td>${waverAddress}</td>
+                                   <td>${waverCount}</td>`;
+          wavesElement.appendChild(waveElement);
+
+        });
+
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  /*
   * This runs our function when the page loads.
   */
   useEffect(() => {
     checkIfWalletIsConnected();
     if(currentAccount) {
       updateWaveCount();
+      fetchScores();
     }
   } )
 
@@ -159,7 +205,8 @@ const App = () => {
         )}
         <br/>
         <div id="wavecount"></div>
-
+        <br/>
+        <table id="wavetable"></table>
       </div>
     </div>
     
