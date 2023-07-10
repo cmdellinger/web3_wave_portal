@@ -3,8 +3,6 @@ import { ethers } from "ethers";
 import "./App.css";
 import abi from "./utils/WavePortal.json";
 
-require('dotenv').config();
-
 const App = () => {
   /*
   * Just a state variable we use to store our user's public wallet.
@@ -13,7 +11,7 @@ const App = () => {
   /**
   * Create a variable here that holds the contract address after you deploy!
   */
-  const contractAddress = "0xC4779d82B867D0c80de9238D1Bba68faEC42A61B";
+  const contractAddress = "0x5BF4058DdefFE87163B4b9895B73acaf70c7FCE5";
   /**
   * Create a variable here that references the abi content!
   */
