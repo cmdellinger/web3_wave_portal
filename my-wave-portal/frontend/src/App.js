@@ -3,11 +3,19 @@ import { ethers } from "ethers";
 import "./App.css";
 import abi from "./utils/WavePortal.json";
 
+// add by line
+import twitterLogo from './assets/twitter-logo.svg';
+const TWITTER_HANDLE = 'gte539z';
+const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
+
 const App = () => {
   /*
   * Just a state variable we use to store our user's public wallet.
   */
   const [currentAccount, setCurrentAccount] = useState("");
+  const [totalWaves, setTotalWaves] = useState();
+  const [waveCountsByAddress, setWaveCountsByAddress] = useState([]);
+  const [allWaves, setAllWaves] = useState([]);
   /**
   * Create a variable here that holds the contract address after you deploy!
   */
@@ -16,10 +24,6 @@ const App = () => {
   * Create a variable here that references the abi content!
   */
   const contractABI = abi.abi;
-  /**
-   * Create a variable for wavetable elements
-   */
-  let wavesElement = document.getElementById('wavetable');
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -77,7 +81,7 @@ const App = () => {
   /**
   * This funciton updates the id="wavecount" element and optionally increments the wave count
   */
-  const updateWaveCount = async (increment = false) => {
+  const updateWaveData = async () => {
       try {
         const { ethereum } = window;
   
@@ -89,22 +93,43 @@ const App = () => {
           let count = await wavePortalContract.getTotalWaves();
           console.log("Retrieved total wave count...", count.toNumber());
           
-          if (increment){
-            /*
-            * Execute the actual wave from your smart contract
-            */
-            const waveTxn = await wavePortalContract.wave();
-            console.log("Mining...", waveTxn.hash);
-    
-            await waveTxn.wait();
-            console.log("Mined -- ", waveTxn.hash);
-    
-            count = await wavePortalContract.getTotalWaves();
-            console.log("Retrieved total wave count...", count.toNumber());
+          // create if to only get other data from contract if wave qty changed
+          if ( totalWaves !== count.toNumber() ) {
+            // save total wave count (in if to prevent inf loop of continual updating)
+            setTotalWaves(count.toNumber());
+
+            // get wave messages
+            const waves = await wavePortalContract.getAllWaves();
+            // reformat wave messages
+            let wavesCleaned = [];
+            waves.forEach(wave => {
+              wavesCleaned.push({
+                address: wave.waver,
+                timestamp: new Date(wave.timestamp * 1000),
+                message: wave.message
+              });
+            });
+            // save reformatted wave messages
+            setAllWaves(wavesCleaned);
+
+            // get wave counts by address
+            let waverAddresses = await wavePortalContract.getWaverAddresses();
+            console.log("Retrieved wave addresses...\n", waverAddresses);
+            // reformat wave messages
+            let waverCountsCleaned = [];
+            await Promise.all( waverAddresses.map(async (waverAddress) => {
+              let waverCount = await wavePortalContract.getWaverCount(waverAddress);
+              waverCountsCleaned.push({
+                address: waverAddress,
+                count: waverCount.toNumber()
+              });
+            }));
+            console.log("Retrieved wave counts by address:");
+            console.log(waverCountsCleaned);
+            // save reformatted wave counts
+            setWaveCountsByAddress(waverCountsCleaned);
           }
 
-          document.getElementById("wavecount").innerHTML = `Total Waves: ${count.toNumber()}`;
-  
         } else {
           console.log("Ethereum object doesn't exist!");
         }
@@ -117,13 +142,6 @@ const App = () => {
   * This runs our smart contract's wave function
   */
   const wave = async () => {
-    updateWaveCount(true);
-  }
-
-  /*
-  * This fetches the addresses that have waved
-  */
-  const fetchScores = async () => {
     try {
       const { ethereum } = window;
 
@@ -132,26 +150,20 @@ const App = () => {
         const signer = provider.getSigner();
         const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
 
-        let waverAddresses = await wavePortalContract.getWaverAddresses();
-        console.log("Retrieved wave addresses...\n", waverAddresses);
+        // get wave count before waving
+        let count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved total wave count...", count.toNumber());
+        
+        // Execute the actual wave from your smart contract
+        const waveTxn = await wavePortalContract.wave("this is a test!");
+        console.log("Mining...", waveTxn.hash);
 
-        console.log("Generating wave table...");
-        const headerElement = document.createElement('tr');
-        headerElement.className = 'table-header';
-        headerElement.innerHTML = `<td>Waver Address</td>
-                                 <td>Waves</td>`;
-        wavesElement.appendChild(headerElement);
+        await waveTxn.wait();
+        console.log("Mined -- ", waveTxn.hash);
 
-        waverAddresses.forEach(async function (waverAddress){
-          let waverCount = await wavePortalContract.getWaverCount(waverAddress);
-
-          const waveElement = document.createElement('tr');
-          waveElement.className = 'table-wave';
-          waveElement.innerHTML = `<td>${waverAddress}</td>
-                                   <td>${waverCount}</td>`;
-          wavesElement.appendChild(waveElement);
-
-        });
+        // get wave count after waving
+        count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved total wave count...", count.toNumber());
 
       } else {
         console.log("Ethereum object doesn't exist!");
@@ -159,7 +171,7 @@ const App = () => {
     } catch (error) {
       console.log(error);
     }
-  };
+  }
 
   /*
   * This runs our function when the page loads.
@@ -167,8 +179,7 @@ const App = () => {
   useEffect(() => {
     checkIfWalletIsConnected();
     if(currentAccount) {
-      updateWaveCount();
-      fetchScores();
+      updateWaveData();
     }
   } )
 
@@ -183,7 +194,7 @@ const App = () => {
           I am Charley and I am learning solidity and React. Connect your Ethereum wallet and wave at me!
 
         </div>
-
+        <br />
         {/*
         * If there is no currentAccount render this button
         */}
@@ -201,10 +212,56 @@ const App = () => {
             Wave at Me
           </button>
         )}
+
+        <br />
+
+        { totalWaves && (
+          <div>
+            Total Waves: {totalWaves}
+          </div>
+        ) }
+
+        <br />
+
+        { waveCountsByAddress && (
+          <table>
+            <caption>Wave Counts by Address</caption>
+            <tr>
+              <th scope="col">Address</th>
+              <th scope="col">Waves</th>
+            </tr>
+            { waveCountsByAddress.map((wave) =>{
+              return (
+                <tr>
+                  <td>{wave.address}</td>
+                  <td>{wave.count}</td>
+                </tr>
+              )
+            })}
+          </table>
+        ) }
+
         <br/>
-        <div id="wavecount"></div>
-        <br/>
-        <table id="wavetable"></table>
+
+        {allWaves.map((wave, index) => {
+          return (
+            <div key={index} style={{ backgroundColor: "OldLace", marginTop: "16px", padding: "8px" }}>
+              <div>Address: {wave.address}</div>
+              <div>Time: {wave.timestamp.toString()}</div>
+              <div>Message: {wave.message}</div>
+            </div>)
+        })}
+
+        <div className="footer-container">
+          <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
+          <a
+            className="footer-text"
+            href={TWITTER_LINK}
+            target="_blank"
+            rel="noreferrer"
+          >{`built by @${TWITTER_HANDLE}`}</a>
+        </div>
+
       </div>
     </div>
     

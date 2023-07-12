@@ -65,3 +65,15 @@
   animation: gradient-animation 4s ease infinite;
   margin-left: 10px;
 }
+
+.twitter-logo {
+  width: 35px;
+  height: 35px;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 30px;
+}
