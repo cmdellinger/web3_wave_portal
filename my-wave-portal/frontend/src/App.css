@@ -77,3 +77,41 @@
   align-items: center;
   padding-bottom: 30px;
 }
+
+.textWrapper {
+	margin-bottom: 20px;
+}
+
+.textWrapper label {
+	display: block;
+	margin-bottom: 8px;
+}
+
+.textBox {
+	display: block;
+	box-sizing: border-box;
+	padding: 5px;
+	width: 100%;
+	height: 80px;
+	border: none;
+	border-radius: 5px;
+	font-family: inherit;
+	font-size: 1rem;
+}
+
+.form-message {
+  height: 45px;
+  border: 0;
+  width: auto;
+  padding-left: 40px;
+  padding-right: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  color: black;
+}
+
+.wave-message-box {
+  max-width:100%
+}

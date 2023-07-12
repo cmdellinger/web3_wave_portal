@@ -16,6 +16,7 @@ const App = () => {
   const [totalWaves, setTotalWaves] = useState();
   const [waveCountsByAddress, setWaveCountsByAddress] = useState([]);
   const [allWaves, setAllWaves] = useState([]);
+  const [waveMessage, setWaveMessage] = useState("");
   /**
   * Create a variable here that holds the contract address after you deploy!
   */
@@ -155,7 +156,7 @@ const App = () => {
         console.log("Retrieved total wave count...", count.toNumber());
         
         // Execute the actual wave from your smart contract
-        const waveTxn = await wavePortalContract.wave("this is a test!");
+        const waveTxn = await wavePortalContract.wave(waveMessage);
         console.log("Mining...", waveTxn.hash);
 
         await waveTxn.wait();
@@ -164,6 +165,8 @@ const App = () => {
         // get wave count after waving
         count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
+
+        updateWaveData();
 
       } else {
         console.log("Ethereum object doesn't exist!");
@@ -207,10 +210,23 @@ const App = () => {
         {/*
         * If there is a currentAccount render wave button and waves
         */}
+
         {currentAccount && (
           <button className="cta-button connect-wallet-button" onClick={wave}>
             Wave at Me
           </button>
+        )}
+
+        <br />
+
+        {currentAccount && (
+          <form onSubmit={wave}>
+            <label className="form-message">
+              (Optional) Submit a message with your wave:
+            </label>
+            <input style={{width:'100%'}} type="text" value={waveMessage} onChange={(ev) => setWaveMessage(ev.target.value)} />
+            <br />
+          </form>
         )}
 
         <br />
@@ -242,6 +258,12 @@ const App = () => {
         ) }
 
         <br/>
+        
+        {allWaves && (
+          <p className="sub-text">
+            Messages:
+          </p>
+        )}
 
         {allWaves.map((wave, index) => {
           return (
