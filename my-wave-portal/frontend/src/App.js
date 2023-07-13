@@ -269,7 +269,7 @@ const App = () => {
 
         <br />
 
-        { waveCountsByAddress && (
+        { currentAccount && (
           <table>
             <caption>Wave Counts by Address</caption>
             <tr>
@@ -289,7 +289,7 @@ const App = () => {
 
         <br/>
         
-        {allWaves && (
+        {currentAccount && (
           <p className="sub-text">
             Messages:
           </p>
