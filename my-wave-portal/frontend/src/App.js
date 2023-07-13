@@ -139,36 +139,6 @@ const App = () => {
       }
   }
 
-  useEffect(() => {
-    let wavePortalContract;
-  
-    const onNewWave = (from, timestamp, message) => {
-      console.log("NewWave", from, timestamp, message);
-      setAllWaves(prevState => [
-        ...prevState,
-        {
-          address: from,
-          timestamp: new Date(timestamp * 1000),
-          message: message,
-        },
-      ]);
-    };
-  
-    if (window.ethereum) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-  
-      wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
-      wavePortalContract.on("NewWave", onNewWave);
-    }
-  
-    return () => {
-      if (wavePortalContract) {
-        wavePortalContract.off("NewWave", onNewWave);
-      }
-    };
-  });
-
   /*
   * This runs our smart contract's wave function
   */
@@ -224,8 +194,8 @@ const App = () => {
         </div>
 
         <div className="bio">
-          I am Charley and I am learning solidity and React. Connect your Ethereum wallet and wave at me!
-
+          Connect your Ethereum wallet and wave at me! <br /><br />
+          There is a random chance that the waver will get 0.0001 gETH when they wave (to limit spam, waves are only allowed every 15 minutes).
         </div>
         <br />
         {/*
@@ -261,7 +231,7 @@ const App = () => {
 
         <br />
 
-        { totalWaves && (
+        { currentAccount && (
           <div>
             Total Waves: {totalWaves}
           </div>
